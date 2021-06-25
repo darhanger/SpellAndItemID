@@ -1,10 +1,12 @@
 ## Interface: 30300
 ## Title: |cff00ccffSpellID and ItemID|r
 ## Notes: SpellID and ItemID in Tooltip
-## Author: |cffa330c9DarhangeR|r https://github.com/darhanger
-## Version: |cffff00001.0|r
-## X-Date: 2019-17-10
+## Author: |cffa330c9DarhangeR|r
+## Version: |cffff00001.1|r
+## X-Date: 2021-25-06
 ## X-Author-Server: Sirus
 ## X-Category: Information
+
+Locales\Locales.xml
 
 Core.lua

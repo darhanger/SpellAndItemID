@@ -2,6 +2,7 @@ local LastBaa = 0;
 local cleartime = 0;
 local melee = 0;
 local annoying = true;
+local L = LibStub("AceLocale-3.0"):GetLocale("SpellAndItemID")
 
 local function onUpdate(self,elapsed) 
   if self.time < GetTime() - 2 then
@@ -52,11 +53,11 @@ local select, UnitBuff, UnitDebuff, UnitAura, tonumber, strfind, hooksecurefunc 
 
 local function addLine(self,id,isItem,Caster)
 	if isItem then
-		self:AddDoubleLine("ItemID:","|cffffffff"..id)
+		self:AddDoubleLine(L["ItemID:"],"|cffffffff"..id)
 	elseif Caster then
-		self:AddDoubleLine("Applied by:","|cffffffff"..id)
+		self:AddDoubleLine(L["Applied by:"],"|cffffffff"..id)
 	else
-		self:AddDoubleLine("SpellID:","|cffffffff"..id)
+		self:AddDoubleLine(L["SpellID:"],"|cffffffff"..id)
 	end
 	self:Show()
 end
