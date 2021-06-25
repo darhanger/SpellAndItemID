@@ -2,7 +2,7 @@
 ## Title: |cff00ccffSpellID and ItemID|r
 ## Notes: SpellID and ItemID in Tooltip
 ## Author: |cffa330c9DarhangeR|r
-## Version: |cffff00001.1|r
+## Version: |cffff00001.2|r
 ## X-Date: 2021-25-06
 ## X-Author-Server: Sirus
 ## X-Category: Information
