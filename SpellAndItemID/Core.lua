@@ -1,125 +1,124 @@
-local LastBaa = 0;
-local cleartime = 0;
-local melee = 0;
-local annoying = true;
-local L = LibStub("AceLocale-3.0"):GetLocale("SpellAndItemID")
-
-local function onUpdate(self,elapsed) 
-  if self.time < GetTime() - 2 then
-    if self:GetAlpha() == 0 then self:Hide() else self:SetAlpha(self:GetAlpha() - .05) end
-  end
-end
-
-local messanger = CreateFrame("Frame",nil,UIParent) 
-messanger:SetSize(ChatFrame1:GetWidth(),30)
-messanger:Hide()
---messanger:SetScript("OnUpdate",onUpdate)
-messanger:SetPoint("CENTER",0,70)
-messanger.text = messanger:CreateFontString(nil,"OVERLAY","MovieSubtitleFont")
-messanger.text:SetAllPoints()
-messanger.texture = messanger:CreateTexture()
-messanger.texture:SetAllPoints()
---messanger.time = 0
-
-function messanger:message(message) 
-  self.text:SetText(message)
-  self:SetAlpha(1)
-  --self.time = GetTime()
-  self:Show() 
-end
-
-local MouseoverFrame = CreateFrame("Frame");
-MouseoverFrame:RegisterEvent("UPDATE_MOUSEOVER_UNIT");
-MouseoverFrame:SetScript("OnEvent", function(self,event,...)
-	if event == "UPDATE_MOUSEOVER_UNIT" then
-	    if (UnitExists("mouseover") == 1) then
-		GameTooltip:ClearLines();
-		GameTooltip:SetUnit("mouseover")
-        local guildName, guildRank = GetGuildInfo("mouseover");
-			if guildName ~= nil and guildRank ~= nil then
-				--GameTooltip:AddLine("|cffffffff"..guildName);
-				GameTooltip:AddLine("|cffffffffGuild Rank: "..guildRank);
-				if UnitExists("mouseover-target") then
-					GameTooltip:AddLine("|cffffffffTargeting: "..UnitName("mouseover-target"));
-				end
-				GameTooltip:Show();
-			end
-		end
+local hooksecurefunc, select, UnitBuff, UnitDebuff, UnitAura, UnitGUID, GetGlyphSocketInfo, tonumber, strfind =
+      hooksecurefunc, select, UnitBuff, UnitDebuff, UnitAura, UnitGUID, GetGlyphSocketInfo, tonumber, strfind
+local types = {
+    spell       = "SpellID:",
+	aplied		= "Applied by:",
+    item        = "ItemID:",
+    unit        = "NPC ID:",
+    quest       = "QuestID:",
+    achievement = "AchievementID:",
+};
+if (GetLocale() == "ruRU") then
+    types.spell       = "ID заклинания:"
+    types.aplied      = "Наложено:"
+    types.item        = "ID предмета:"
+    types.unit        = "ID НПЦ:"
+    types.quest       = "ID задания:"
+    types.achievement = "ID достижения:"
+end;
+local function addLine(tooltip, id, type)
+    local found = false
+    for i = 1, 15 do
+        local frame = _G[tooltip:GetName() .. "TextLeft" .. i]
+        local text
+        if frame then text = frame:GetText() end
+        if text and text == type then found = true break end
+    end
+    if not found then
+        tooltip:AddDoubleLine(type, "|cffffffff" .. id)
+        tooltip:Show()
+    end	
+end;
+-- For Linked Tooltips --------------------------------------------------------
+local function onSetHyperlink(self, link)
+    local type, id = string.match(link,"^(%a+):(%d+)")
+    if not type or not id then return end
+    if type == "spell" or type == "enchant" or type == "trade" then
+        addLine(self, id, types.spell)
+    elseif type == "quest" then
+        addLine(self, id, types.quest)
+    elseif type == "achievement" then
+        addLine(self, id, types.achievement)
+    elseif type == "item" then
+        addLine(self, id, types.item)
+    end
+end;
+hooksecurefunc(ItemRefTooltip, "SetHyperlink", onSetHyperlink)
+hooksecurefunc(GameTooltip, "SetHyperlink", onSetHyperlink)
+-- Spell Hooks ----------------------------------------------------------------
+hooksecurefunc(GameTooltip, "SetUnitBuff", function(self, ...)
+    local id = select(11, UnitBuff(...))
+	local name = select(8, UnitBuff(...))
+    if id then addLine(self, id, types.spell) end
+	if name then 
+		local exactname = UnitName(name);
+		addLine(self, exactname, types.aplied, true);
+	end	
+end);
+hooksecurefunc(GameTooltip, "SetUnitDebuff", function(self,...)
+    local id = select(11, UnitDebuff(...))
+	local name = select(8, UnitDebuff(...))
+    if id then addLine(self, id, types.spell) end
+	if name then 
+		local exactname = UnitName(name);
+		addLine(self, exactname, types.aplied, true);
+	end	
+end);
+hooksecurefunc(GameTooltip, "SetUnitAura", function(self,...)
+    local id = select(11, UnitAura(...))
+	local name = select(8, UnitAura(...))
+    if id then addLine(self, id, types.spell) end
+	if name then 
+		local exactname = UnitName(name);
+		addLine(self, exactname, types.aplied, true);
+	end	
+end);
+hooksecurefunc("SetItemRef", function(link, ...)
+    local id = tonumber(link:match("spell:(%d+)"))
+    if id then addLine(ItemRefTooltip, id, types.spell) end
+end);
+GameTooltip:HookScript("OnTooltipSetSpell", function(self)
+    local id = select(3, self:GetSpell())
+    if id then addLine(self, id, types.spell) end
+end);
+-- NPCs Hooks ----------------------------------------------------------------
+GameTooltip:HookScript("OnTooltipSetUnit", function(self)
+    local unit = select(2, self:GetUnit())
+    if unit then
+        local guid = UnitGUID(unit) or ""
+        local id   = ni.unit.id(unit)
+        if id and guid:match("%a+") ~= "Player" then addLine(GameTooltip, id, types.unit) end
     end
 end);
-
-local select, UnitBuff, UnitDebuff, UnitAura, tonumber, strfind, hooksecurefunc =
-	select, UnitBuff, UnitDebuff, UnitAura, tonumber, strfind, hooksecurefunc
-
-local function addLine(self,id,isItem,Caster)
-	if isItem then
-		self:AddDoubleLine(L["ItemID:"],"|cffffffff"..id)
-	elseif Caster then
-		self:AddDoubleLine(L["Applied by:"],"|cffffffff"..id)
-	else
-		self:AddDoubleLine(L["SpellID:"],"|cffffffff"..id)
-	end
-	self:Show()
-end
-
--- Spell Hooks ----------------------------------------------------------------
-hooksecurefunc(GameTooltip, "SetUnitBuff", function(self,...)
-	local id = select(11,UnitBuff(...))
-	local name = select(8, UnitBuff(...))
-	if id then addLine(self,id) end
-	if name then 
-		local exactname = UnitName(name);
-		addLine(self,exactname,nil,true);
-	end
-end)
-
-hooksecurefunc(GameTooltip, "SetUnitDebuff", function(self,...)
-	local id = select(11,UnitDebuff(...));
-	local name = select(8, UnitDebuff(...));
-	if id then addLine(self,id) end
-	if name then 
-		local exactname = UnitName(name);
-		addLine(self,exactname,nil,true);
-	end
-end)
-
-hooksecurefunc(GameTooltip, "SetUnitAura", function(self,...)
-	local id = select(11,UnitAura(...));
-	local name = select(8, UnitAura(...));
-	if id then addLine(self,id) end
-	if name then 
-		local exactname = UnitName(name);
-		addLine(self,exactname,nil,true);
-	end
-end)
-
-GameTooltip:HookScript("OnTooltipSetSpell", function(self)
-	local id = select(3,self:GetSpell())
-	if id then addLine(self,id) end
-end)
-
-hooksecurefunc("SetItemRef", function(link, ...)
-	local id = tonumber(link:match("spell:(%d+)"))
-	if id then addLine(ItemRefTooltip,id) end
-end)
-
--- Item Hooks -----------------------------------------------------------------
-
+-- Items Hooks ----------------------------------------------------------------
 local function attachItemTooltip(self)
-	local link = select(2,self:GetItem())
-	if not link then return end
-	local id = select(3,strfind(link, "^|%x+|Hitem:(%-?%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%-?%d+):(%-?%d+)"))
-	if id then addLine(self,id,true) end
-end
-
+    local link = select(2, self:GetItem())
+    if link then
+        local id = select(3, strfind(link, "^|%x+|Hitem:(%-?%d+):(%d+):(%d+).*"))
+        if id then addLine(self, id, types.item) end
+    end
+end;
 GameTooltip:HookScript("OnTooltipSetItem", attachItemTooltip)
 ItemRefTooltip:HookScript("OnTooltipSetItem", attachItemTooltip)
 ItemRefShoppingTooltip1:HookScript("OnTooltipSetItem", attachItemTooltip)
 ItemRefShoppingTooltip2:HookScript("OnTooltipSetItem", attachItemTooltip)
-ItemRefShoppingTooltip3:HookScript("OnTooltipSetItem", attachItemTooltip)
 ShoppingTooltip1:HookScript("OnTooltipSetItem", attachItemTooltip)
 ShoppingTooltip2:HookScript("OnTooltipSetItem", attachItemTooltip)
-ShoppingTooltip3:HookScript("OnTooltipSetItem", attachItemTooltip)
-
-SlashCmdList["READYCHECK"] = function() DoReadyCheck() end
-SLASH_READYCHECK1 = '/rc'
+-- Achievement Frame Hooks -----------------------------------------------------
+local f = CreateFrame("frame")
+f:RegisterEvent("ADDON_LOADED")
+f:SetScript("OnEvent", function(_, _, what)
+if what == "Blizzard_AchievementUI" then
+	for i,button in ipairs(AchievementFrameAchievementsContainer.buttons) do
+		button:HookScript("OnEnter", function()
+			GameTooltip:SetOwner(button, "ANCHOR_NONE")
+			GameTooltip:SetPoint("TOPLEFT", button, "TOPRIGHT", 0, 0)
+			addLine(GameTooltip, button.id, types.achievement)
+			GameTooltip:Show()
+		end)
+		button:HookScript("OnLeave", function()
+				GameTooltip:Hide()
+			end)
+		end
+	end
+end)
