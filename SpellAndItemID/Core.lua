@@ -86,7 +86,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     local unit = select(2, self:GetUnit())
     if unit then
         local guid = UnitGUID(unit) or ""
-        local id   = ni.unit.id(unit)
+        local id   = tonumber((UnitGUID(unit)):sub(-10, -7), 16)
         if id and guid:match("%a+") ~= "Player" then addLine(GameTooltip, id, types.unit) end
     end
 end);
