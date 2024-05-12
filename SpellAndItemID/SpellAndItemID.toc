@@ -2,9 +2,8 @@
 ## Title: |cff00ccffSpellID and ItemID|r
 ## Notes: SpellID and ItemID in Tooltip
 ## Author: |cffa330c9DarhangeR|r
-## Version: |cffff00001.3|r
-## X-Date: 2021-02-11
-## X-Author-Server: Sirus
+## Version: |cffff00001.3.2|r
+## X-Date: 2024-05-12
 ## X-Category: Information
 
 Core.lua
