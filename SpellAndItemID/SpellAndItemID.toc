@@ -2,8 +2,8 @@
 ## Title: |cff00ccffSpellID and ItemID|r
 ## Notes: SpellID and ItemID in Tooltip
 ## Author: |cffa330c9DarhangeR|r
-## Version: |cffff00001.3.2|r
-## X-Date: 2024-05-12
+## Version: |cffff00001.3.3|r
+## X-Date: 2025-03-10
 ## X-Category: Information
 
 Core.lua
